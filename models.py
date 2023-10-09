@@ -1,5 +1,4 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
 from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
