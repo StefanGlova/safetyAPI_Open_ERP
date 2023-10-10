@@ -1,8 +1,7 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_restx import Api, Resource, fields, reqparse
+from flask_restx import Api, Resource, fields
 from sqlalchemy.orm import validates
-import requests
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://incidents.db"
