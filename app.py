@@ -4,12 +4,12 @@ from flask_restx import Api, Resource, fields
 from sqlalchemy.orm import validates
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://incidents.db"
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = "postgres://stefan:JQUVYy4Jmht5CW1Jho50e21b5MNrWErw@dpg-ckatkd6smu8c738por20-a.frankfurt-postgres.render.com/open_erp_database"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 api = Api(app)
-
-external_api_url = "https://jsonplaceholder.typicode.com"
 
 
 class IncidentModel(db.Model):
