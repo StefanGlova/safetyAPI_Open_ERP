@@ -1,13 +1,30 @@
+import datetime
 import os
 from flask import Flask, jsonify
+from flask.json import JSONEncoder
 from flask_sqlalchemy import SQLAlchemy
 from flask_restx import Api, Resource, fields
 from sqlalchemy.orm import validates
 
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# app.config[
+#     "SQLALCHEMY_DATABASE_URI"
+# ] = "postgresql://stefan:JQUVYy4Jmht5CW1Jho50e21b5MNrWErw@dpg-ckatkd6smu8c738por20-a.frankfurt-postgres.render.com/open_erp_database"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 api = Api(app)
+
+
+class CustomJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (datetime.date, datetime.time)):
+            return obj.isoformat()
+        return super(CustomJSONEncoder, self).default(obj)
+
+
+app.json_encoder = CustomJSONEncoder
 
 
 class IncidentModel(db.Model):
@@ -44,7 +61,7 @@ class IncidentModel(db.Model):
         self.description = description
 
     @validates("incident_type")
-    def validate_incident_type(self, incident_type):
+    def validate_incident_type(self, key, incident_type):
         if incident_type not in ("injury", "damage", "near_miss"):
             raise ValueError(
                 "Invalid input. Choose from 'injury', 'damage', 'near_miss'"
@@ -52,7 +69,7 @@ class IncidentModel(db.Model):
         return incident_type
 
     @validates("weather")
-    def validate_weather(self, weather):
+    def validate_weather(self, key, weather):
         if weather not in ("sunny", "rain", "snow", "frizing"):
             raise ValueError(
                 "Invalid input. Choose from 'sunny', 'rain', 'neasnowr_miss', 'frizing'"
@@ -60,8 +77,8 @@ class IncidentModel(db.Model):
         return weather
 
     @validates("light")
-    def validate_weather(self, light):
-        if light not in ("dark", "ligh inside", "light outside"):
+    def validate_weather(self, key, light):
+        if light not in ("dark", "light inside", "light outside"):
             raise ValueError(
                 "Invalid input. Choose from 'dark', 'ligh inside', 'light outside'"
             )
@@ -75,7 +92,7 @@ incident_model = api.model(
         "incident_type": fields.String(required=True),
         "person_name": fields.String(required=True),
         "incident_date": fields.Date(required=True),
-        "incident_time": fields.String(equired=True),
+        "incident_time": fields.String(required=True),
         "witness_name": fields.String(required=True),
         "weather": fields.String(required=True),
         "light": fields.String(required=True),
@@ -84,7 +101,7 @@ incident_model = api.model(
 )
 
 
-@api.route("/incidents")
+@api.route("/")
 class IncidentsResource(Resource):
     @api.doc("list_incidents")
     def get(self):
@@ -115,7 +132,6 @@ class IncidentsResource(Resource):
         """
         args = api.payload
         new_incident = IncidentModel(
-            id=args["id"],
             incident_type=args["incident_type"],
             person_name=args["person_name"],
             incident_date=args["incident_date"],
@@ -136,27 +152,6 @@ class IncidentResource(Resource):
     Represents a single incident record.
     """
 
-    @api.doc("get_incident")
-    def get(self, id):
-        """
-        Get incident by id.
-        """
-        incident = IncidentModel.query.get(id)
-        if not incident:
-            return {"error": "Incident not found"}, 404
-
-        return {
-            "id": incident.id,
-            "incident_type": incident.incident_type,
-            "person_name": incident.person_name,
-            "incident_date": incident.incident_date,
-            "incident_time": incident.incident_time,
-            "witness_name": incident.witness_name,
-            "weather": incident.weather,
-            "light": incident.light,
-            "description": incident.description,
-        }
-
     @api.doc("update_incident")
     @api.expect(incident_model)
     def put(self, id):
@@ -168,7 +163,6 @@ class IncidentResource(Resource):
         if not incident:
             return {"error": "Incident not found"}, 404
 
-        incident.id = args["id"]
         incident.incident_type = args["incident_type"]
         incident.person_name = args["person_name"]
         incident.incident_date = args["incident_date"]
@@ -180,6 +174,29 @@ class IncidentResource(Resource):
 
         db.session.commit()
         return {"message": "Incident updated successfully"}, 201
+
+    @api.doc("get_incident")
+    def get(self, id):
+        """
+        Get incident by id.
+        """
+        incident = IncidentModel.query.get(id)
+        if not incident:
+            return {"error": "Incident not found"}, 404
+
+        incident_time = incident.incident_time
+
+        return {
+            "id": incident.id,
+            "incident_type": incident.incident_type,
+            "person_name": incident.person_name,
+            "incident_date": incident.incident_date.isoformat(),
+            "incident_time": incident.incident_time.strftime("%H:%M:%S"),
+            "witness_name": incident.witness_name,
+            "weather": incident.weather,
+            "light": incident.light,
+            "description": incident.description,
+        }
 
     @api.doc("delete_incident")
     def delete(self, id):
@@ -195,4 +212,4 @@ class IncidentResource(Resource):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
