@@ -4,7 +4,7 @@ blinker==1.6.3
 click==8.1.7
 Flask==2.2.5
 flask-restx==1.1.0
-Flask-SQLAlchemy==3.1.1
+Flask-SQLAlchemy==3.0.5
 greenlet==3.0.0
 gunicorn==21.2.0
 itsdangerous==2.1.2
