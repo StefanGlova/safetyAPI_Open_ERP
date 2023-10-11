@@ -18,5 +18,4 @@ psycopg2-binary==2.9.9
 pytz==2023.3.post1
 referencing==0.8.9
 SQLAlchemy==2.0.21
-typing_extensions==4.8.0
-Werkzeug==3.0.0
+typing_extensions==4.7.1
