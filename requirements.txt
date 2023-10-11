@@ -17,7 +17,6 @@ packaging==23.2
 psycopg2-binary==2.9.9
 pytz==2023.3.post1
 referencing==0.8.9
-rpds-py==0.10.4
 SQLAlchemy==2.0.21
 typing_extensions==4.8.0
 Werkzeug==3.0.0
